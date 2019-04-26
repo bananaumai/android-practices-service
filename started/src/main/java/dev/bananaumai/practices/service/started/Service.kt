@@ -27,6 +27,7 @@ class SimpleIntentService : IntentService("SimpleIntentService") {
     override fun onHandleIntent(intent: Intent?) {
         try {
             Thread.sleep(rand.nextLong(until = 2000))
+            //Thread.sleep(10000)
             Log.d(tag, "${intent?.extras?.get(Intent.EXTRA_TEXT)} Working in ${Thread.currentThread().name}(${Thread.currentThread().id})")
         } catch (e: InterruptedException) {
             Thread.currentThread().interrupt()
@@ -50,6 +51,7 @@ class SimpleService : Service() {
                 val str = msg?.obj as String? ?: "Unknown"
 
                 Thread.sleep(rand.nextLong(until = 2000))
+                //Thread.sleep(10000)
 
                 Log.d(tag, "$str Working in ${Thread.currentThread().name}(${Thread.currentThread().id})")
             } catch (e: InterruptedException) {

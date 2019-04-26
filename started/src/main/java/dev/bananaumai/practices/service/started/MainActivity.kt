@@ -32,6 +32,13 @@ class MainActivity : AppCompatActivity() {
             .also { startService(it) }
             .also { Log.d(tag, "started SimpleService") }
 
+
         Log.d(tag, "End of onCreate()")
+    }
+
+
+    override fun onDestroy() {
+        Log.d(tag, "onDestroy()")
+        super.onDestroy()
     }
 }
