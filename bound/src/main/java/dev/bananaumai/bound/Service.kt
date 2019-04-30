@@ -20,43 +20,18 @@ class DataEmitter : Service() {
         fun getService() = this@DataEmitter
     }
 
-    interface EventListener {
-        fun listen()
-    }
-
-    inner class Accelerometer(private var manager: SensorManager? = null) : EventListener {
-        init {
-            if (manager == null) {
-                manager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
-            }
-        }
-
-        private inner class Listener : SensorEventListener {
-            override fun onSensorChanged(event: SensorEvent?) {
-                if (event?.sensor?.getType() != Sensor.TYPE_ACCELEROMETER) {
-                    return
-                }
-
-                Log.d(tag, "${event.timestamp / 1000000L}: ${event.values.joinToString(", ")}")
-            }
-
-            override fun onAccuracyChanged(sensor: Sensor, accuracy: Int) {
-            }
-        }
-
-        override fun listen() {
-            val sensor = manager!!.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
-            manager!!.registerListener(Listener(), sensor, SensorManager.SENSOR_DELAY_GAME)
-        }
-    }
-
     override fun onCreate() {
         Log.d(tag, "onCreate")
 
         super.onCreate()
 
-        val accelerometer = Accelerometer()
-        accelerometer.listen()
+        val logger = { data: Any ->
+            Log.d(tag, data.toString())
+            Unit
+        }
+
+        val accelerometer = Accelerometer(getSystemService(Context.SENSOR_SERVICE) as SensorManager)
+        accelerometer.listen(logger)
     }
 
     override fun onBind(intent: Intent?): IBinder? {
@@ -68,5 +43,33 @@ class DataEmitter : Service() {
         Log.d(tag, "onDestroy")
 
         super.onDestroy()
+    }
+}
+
+interface EventListener {
+    fun listen(callback: (Any) -> Unit)
+}
+
+class Accelerometer(private val manager: SensorManager) : EventListener {
+    inner class AccelerometerEvent(private val event: SensorEvent) {
+        override fun toString() =
+            "${this.javaClass.name} { timestamp: ${event.timestamp}, values: ${event.values.joinToString(",", "[", "]")} }"
+    }
+
+    override fun listen(callback: (Any) -> Unit) {
+        val sensor = manager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
+        val listener = object : SensorEventListener {
+            override fun onSensorChanged(event: SensorEvent?) {
+                if (event?.sensor?.getType() != Sensor.TYPE_ACCELEROMETER) {
+                    return
+                }
+
+                callback(AccelerometerEvent(event))
+            }
+
+            override fun onAccuracyChanged(sensor: Sensor, accuracy: Int) {
+            }
+        }
+        manager.registerListener(listener, sensor, SensorManager.SENSOR_DELAY_GAME)
     }
 }
