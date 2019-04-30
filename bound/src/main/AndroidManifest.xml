@@ -17,6 +17,7 @@
             </intent-filter>
         </activity>
         <service android:name=".DataEmitter"></service>
+        <service android:name=".DataProcessor"></service>
     </application>
 
 </manifest>
